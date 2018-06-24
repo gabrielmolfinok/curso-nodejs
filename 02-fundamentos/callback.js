@@ -23,6 +23,6 @@ getUsuarioById(1, (err, usuario) => {
         return console.log(err);
     }
 
-    console.log('Usuario de BD:', usuario);
+    console.log('Usuario de BD broooooo:', usuario);
 
 });
