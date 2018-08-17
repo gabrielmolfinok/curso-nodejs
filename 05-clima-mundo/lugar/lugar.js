@@ -17,7 +17,7 @@ const getLugarLatLng = async(direccion) => {
   return {
     direccion: location.formatted_address,
     lat: coords.lat,
-    lng: coords.lng
+    lon: coords.lng
   }
 
 }
