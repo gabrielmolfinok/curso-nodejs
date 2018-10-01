@@ -1,14 +1,46 @@
 const express = require('express')
-const bcrypt = require('bcryptjs')
-const Usuario = require('../models/usuario')
 const app = express()
+const bcrypt = require('bcryptjs')
+const _ = require('underscore')
+
+const Usuario = require('../models/usuario')
 
 
-
+// GET
 app.get('/usuario', function (req, res) {
-    res.json('get Usuario')
+
+    let from = Number(req.query.from) || 0
+    let to = Number(req.query.to) || 5
+    
+    Usuario.find({ estado: true }, 'nombre email role estado google img')
+            .skip(from)
+            .limit(to)
+            .exec( (err, usuarios) => {
+
+                if (err) {
+                    return res.status(400).json({
+                        ok: false,
+                        err
+                    })
+                }
+
+                Usuario.count({ estado: true }, (err, count) => {
+
+                    res.json({
+                        ok: true,
+                        usuarios,
+                        count
+                    })
+
+                } )
+
+                
+            })
+    
 })
 
+
+// POST
 app.post('/usuario', function (req, res) {
 
     let body = req.body;
@@ -29,8 +61,6 @@ app.post('/usuario', function (req, res) {
             })
         }
 
-        // usuarioDB.password = null
-
         res.json({ 
             ok: true,
             usuario: usuarioDB
@@ -42,17 +72,84 @@ app.post('/usuario', function (req, res) {
 
 })
 
+
+// PUT
 app.put('/usuario/:id', function (req, res) {
 
     let id = req.params.id;
-    res.json({
-        id
+    let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
+
+    Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
+        
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            usuario: usuarioDB
+        })
+
     })
+
 
 })
 
-app.delete('/usuario', function (req, res) {
-    res.json('delete Usuario')
+
+// DELETE
+app.delete('/usuario/:id', function (req, res) {
+
+    let id = req.params.id
+    let stateChange = {
+        estado: false
+    }
+
+    // BORRADO LOGICO
+    Usuario.findByIdAndUpdate(id, stateChange, { new: true }, (err, usuarioDB) => {
+        
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+        
+        res.json({
+            ok: true,
+            usuario: usuarioDB
+        })
+        
+    })
+    
+    // BORRADO FISICO
+    // Usuario.findByIdAndRemove(id, (err, deletedUser) => {
+
+    //     if (err) {
+    //         return res.status(400).json({
+    //             ok: false,
+    //             err
+    //         })
+    //     }
+
+    //     if (!deletedUser) {
+    //         return res.status(400).json({
+    //             ok: false,
+    //             err: {
+    //                 message: 'Usuario no encontrado'
+    //             }
+    //         })
+    //     }
+
+    //     res.json({
+    //         ok: true,
+    //         usuario: deletedUser
+    //     })
+
+    // })
+
 })
 
 
