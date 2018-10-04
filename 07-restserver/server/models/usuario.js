@@ -43,6 +43,10 @@ let usuarioSchema = new Schema({
     }
 });
 
+
+// ¡¡¡IMPORTANTE!!!...
+// Se quita la contraseña antes de retornar el User como JSON
+
 usuarioSchema.methods.toJSON = function() {
     
     let user = this;

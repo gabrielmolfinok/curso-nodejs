@@ -1,13 +1,21 @@
 const express = require('express')
 const app = express()
+
 const bcrypt = require('bcryptjs')
 const _ = require('underscore')
 
 const Usuario = require('../models/usuario')
+const { verifyToken } = require('../middlewares/authentication')
 
 
 // GET
-app.get('/usuario', function (req, res) {
+app.get('/usuario', verifyToken, (req, res) => {
+
+    return res.json({
+        usuario: req.usuario,
+        nombre: req.usuario.nombre,
+        email: req.usuario.email
+    })
 
     let from = Number(req.query.from) || 0
     let to = Number(req.query.to) || 5
@@ -40,8 +48,8 @@ app.get('/usuario', function (req, res) {
 })
 
 
-// POST
-app.post('/usuario', function (req, res) {
+// POST (Guardar nuevo)
+app.post('/usuario', verifyToken, (req, res) => {
 
     let body = req.body;
 
@@ -73,8 +81,8 @@ app.post('/usuario', function (req, res) {
 })
 
 
-// PUT
-app.put('/usuario/:id', function (req, res) {
+// PUT (Actualizar)
+app.put('/usuario/:id', verifyToken, (req, res) => {
 
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
@@ -100,7 +108,7 @@ app.put('/usuario/:id', function (req, res) {
 
 
 // DELETE
-app.delete('/usuario/:id', function (req, res) {
+app.delete('/usuario/:id', verifyToken, (req, res) => {
 
     let id = req.params.id
     let stateChange = {
