@@ -1,9 +1,9 @@
 
 const jwt = require('jsonwebtoken')
 
-// =========
+// ===================
 // Verificar Token
-// =========
+// ===================
 
 let verifyToken = (req, res, next) => {
 
@@ -30,4 +30,26 @@ let verifyToken = (req, res, next) => {
 }
 
 
-module.exports = { verifyToken }
+// ===================
+// Verificar AdminRole
+// ===================
+
+let verifyAdminRole = (req, res, next) => {
+
+    let usuario = req.usuario
+
+    if (usuario.role === 'USER_ROLE') {
+        return res.json({
+            ok: false,
+            err: {
+                message: 'No tiene los permisos suficientes'
+            }
+        })
+    }
+
+    next()
+
+}
+
+
+module.exports = { verifyToken, verifyAdminRole }
