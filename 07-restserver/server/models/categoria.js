@@ -5,14 +5,8 @@ const mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let categoriaSchema = new Schema({
-    nombre: {
-        type: String,
-        required: [true, 'El nombre es necesario']
-    },
-    active: {
-        type: Boolean,
-        default: true
-    }
+    descripcion: { type: String, unique: true, required: [true, 'La descripcion es necesaria'] },
+    usuario: {type: Schema.Types.ObjectId, ref: 'Usuario'}
 })
 
 module.exports = mongoose.model('Categoria', categoriaSchema)

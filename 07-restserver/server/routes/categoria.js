@@ -9,7 +9,7 @@ const { verifyToken, verifyAdminRole } = require('../middlewares/authentication'
 
 
 // Mostrar todas las categorias
-app.get('/categoria', (req, res) => {
+app.get('/categoria', verifyToken, (req, res) => {
 
     Categoria.
     find().
@@ -34,13 +34,13 @@ app.get('/categoria', (req, res) => {
 })
 
 // Mostrar categoria por ID
-app.get('/categoria/:id', (req, res) => {
+app.get('/categoria/:id', verifyToken, (req, res) => {
 
-    let _id = req.params.id
+    let id = req.params.id
 
     Categoria.
-    find({ _id }).
-    exec((err, categoria) => {
+    findById( id ).
+    exec((err, categoriaDB) => {
 
         if (err) {
             
@@ -51,9 +51,18 @@ app.get('/categoria/:id', (req, res) => {
 
         }
 
+        if (!categoriaDB) {
+            return res.json({
+                ok: false,
+                err: {
+                    message: 'El ID no es correcto'
+                }
+            })
+        }
+
         return res.json({
             ok: true,
-            categoria
+            categoria: categoriaDB
         })
 
     })
@@ -62,18 +71,77 @@ app.get('/categoria/:id', (req, res) => {
 
 
 // POST (Guardar nuevo)
-app.post('/categoria', [verifyToken, verifyAdminRole], (req, res) => {
+app.post('/categoria', verifyToken, (req, res) => {
 
     
+    let body = req.body
+
+    let categoria = new Categoria({
+        descripcion: body.descripcion,
+        usuario: req.usuario._id
+    })
+
+    categoria.
+    save((err, categoriaDB) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+
+        if (!categoriaDB) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            categoria: categoriaDB
+        })
+
+    })
 
 
 })
 
 
 // PUT (Actualizar)
-app.put('/categoria/:id', [verifyToken, verifyAdminRole], (req, res) => {
+app.put('/categoria/:id', verifyToken, (req, res) => {
 
-    
+    let id = req.params.id
+    let body = req.body
+
+    let descCategoria = {
+        descripcion: body.descripcion
+    }
+
+    Categoria.
+    findByIdAndUpdate( id, descCategoria, { new: true, runValidators: true }, (err, categoriaDB) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+
+        if (!categoriaDB) {
+            return res.status(400).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            categoria: categoriaDB
+        })
+
+    })    
 
 
 })
@@ -81,6 +149,35 @@ app.put('/categoria/:id', [verifyToken, verifyAdminRole], (req, res) => {
 
 // DELETE
 app.delete('/categoria/:id', [verifyToken, verifyAdminRole], (req, res) => {
+
+
+    let id = req.params.id
+
+    Categoria.
+    findByIdAndRemove( id, (err, categoriaDB) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+
+        if (!categoriaDB) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El ID no existe'
+                }
+            })
+        }
+
+        res.json({
+            ok: true,
+            message: 'Categoria borrada'
+        })
+        
+    })
 
    
 })
