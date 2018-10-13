@@ -15,16 +15,16 @@ app.get('/productos', verifyToken, (req, res) => {
     // populate: usuarios y categoria
     // paginado
 
-    let from = req.params.from || 0
-    let to = req.params.to || 5
+    let from = Number(req.query.from) || 0
+    let to = Number(req.query.to) || 5
     
     Producto.
-    find().
+    find({ disponible: true }).
+    skip(from).
+    limit(to).
     sort('nombre').
     populate('usuario', 'nombre email').
     populate('categoria', 'descripcion').
-    skip(from).
-    limit(to).
     exec(( err, productos ) => {
 
         if (err) {
@@ -44,29 +44,37 @@ app.get('/productos', verifyToken, (req, res) => {
 })
 
 // Obtener producto por ID
-app.get('/productos/:id', (req, res) => {
+app.get('/productos/:id', verifyToken, (req, res) => {
 
     // populate: usuarios y categoria
 
-    let _id = req.params.id
+    let id = req.params.id
 
     Producto.
-    find({ _id }).
-    sort('nombre').
+    findById( id ).
     populate('usuario', 'nombre email').
     populate('categoria', 'descripcion').
-    exec(( err, productos ) => {
+    exec(( err, productoDB ) => {
 
         if (err) {
-            return res.status(400).json({
+            return res.status(500).json({
                 ok: false,
                 err
             })
         }
 
+        if (!productoDB) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El ID no existe'
+                }
+            })
+        }
+
         return res.json({
             ok: true,
-            productos
+            producto: productoDB
         })
 
     })
@@ -106,7 +114,7 @@ app.post('/productos', verifyToken, (req, res) => {
 
 })
 
-app.put('/productos/:id', (req, res) => {
+app.put('/productos/:id', verifyToken, (req, res) => {
 
     let _id = req.params.id
     let body = req.body
@@ -140,34 +148,39 @@ app.put('/productos/:id', (req, res) => {
 
 })
 
-app.delete('/productos/:id', (req, res) => {
+app.delete('/productos/:id', verifyToken, (req, res) => {
 
     let _id = req.params.id
 
     Producto.
-    findOneAndUpdate({ _id }, { 'disponible': false }, (err, productoDB) => {
+    findOneAndUpdate({ _id }, { 'disponible': false }, { new: true }, (err, productoDB) => {
 
         if (err) {
-            return res.status(400).json({
+            return res.status(500).json({
                 ok: false,
                 err
             })
         }
 
+        if (!productoDB) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El ID no existe'
+                }
+            })
+        }
+
+
         return res.json({
             ok: true,
-            productoDB
+            producto: productoDB,
+            mensaje: 'Producto borrado'
         })
 
     })
 
 })
-
-
-
-
-
-
 
 
 module.exports = app
