@@ -13,6 +13,8 @@ app.get('/categoria', verifyToken, (req, res) => {
 
     Categoria.
     find().
+    sort('descripcion').
+    populate('usuario', 'nombre email').
     exec((err, categorias) => {
 
         if (err) {
