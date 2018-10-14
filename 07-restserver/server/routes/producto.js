@@ -81,6 +81,34 @@ app.get('/productos/:id', verifyToken, (req, res) => {
 
 })
 
+app.get('/productos/buscar/:termino', verifyToken, (req, res) => {
+
+    let termino = req.params.termino
+
+    // Obtiene una expresion regular del termino
+    let regex = new RegExp(termino, 'i')
+
+    Producto.
+    find({ nombre: regex, disponible: true }).
+    populate('categoria', 'descripcion').
+    exec((err, productos) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            })
+        }
+
+        res.json({
+            ok: true,
+            productos
+        })
+
+    })
+
+})
+
 app.post('/productos', verifyToken, (req, res) => {
 
     let body = req.body
@@ -153,7 +181,7 @@ app.delete('/productos/:id', verifyToken, (req, res) => {
     let _id = req.params.id
 
     Producto.
-    findOneAndUpdate({ _id }, { 'disponible': false }, { new: true }, (err, productoDB) => {
+    findOneAndUpdate({ _id }, { disponible: false }, { new: true }, (err, productoDB) => {
 
         if (err) {
             return res.status(500).json({
