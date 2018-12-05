@@ -26,7 +26,12 @@ socket.on('connect', function() {
 socket.on('disconnect', function() { console.log('Perdimos conexión con el servidor') })
 
 // Escuchar información
-socket.on('crearMensaje', function(mensaje) { renderizarMensajes(mensaje, false) })
+socket.on('crearMensaje', function(mensaje) { 
+    
+    renderizarMensajes(mensaje, false)
+    scrollBottom()
+    
+})
 
 // Escuchar cambios de usuarios (Usuario entra o sale del chat)
 socket.on('listaPersona', function(personas) { renderizarUsuarios( personas ) })
